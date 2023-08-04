@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="notesApp.css" />
+
+    <title>Notes Application</title>
+</head>
+
+<body>
+
+    <head>
+
+    </head>
+    <nav>
+        <ul>
+            <li id="showNew">New Note</li>
+            <li id="search">Search</li>
+            <li id="inputSearch"><input id="searchWord"></li>
+            <li> <button id="buttonSearch">Search</button></li>
+            <li> <button id="undoButton">Undo</button></li>
+        </ul>
+    </nav>
+    <div id="newNote">
+        <input type="text" id="title" placeholder="Title"><br><br>
+        <textarea type="text" id="note" class="editableField" placeholder="Note"></textarea><br><br>
+        <button type="button" id="saveNoteButton">Save Note</button>
+    </div>
+    <div id="noteContainer">
+
+    </div>
+
+    <script type="module" src="notesApp.js"></script>
+    <script type="module" src="loadNotes.js"></script>
+    <script type="module" src="dataFormat.js"></script>
+    <script type="module" src="actionsOnNotes.js"></script>
+</body>
+
+</html>
