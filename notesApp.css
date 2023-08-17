@@ -1,6 +1,6 @@
 body {
     font-family: 'Courier New', Courier, monospace;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
 }
 
 button {
@@ -53,15 +53,14 @@ nav li {
     cursor: pointer;
 }
 
-nav li:hover {
-    font-size: 1.7rem;
-}
+
 
 .listTemplate {
     display: block;
     width: 300px;
     height: 300px;
     margin: 10px;
+    overflow: hidden;
 }
 
 .listTemplate::before {
@@ -77,10 +76,19 @@ nav li:hover {
 }
 
 .datefield {
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     margin: 3px;
 }
 
 .seeNote {
     position: absolute;
+}
+.hide{
+    display: none;
+}
+.noteDisplayed{
+    display: inline-block;
+}
+strong{
+    font-size: 0.9rem;
 }

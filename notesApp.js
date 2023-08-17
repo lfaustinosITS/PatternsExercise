@@ -5,18 +5,11 @@ import { saveNote, restoreNotesFromHistory } from "./actionsOnNotes.js";
 
 //New Note Field
 const currentDate = new Date();
-const showNewButton = document.getElementById('showNew');
-showNewButton.addEventListener('click', function () {
-    const newNoteClass = document.getElementById('newNote');
-    if (newNoteClass.style.display === 'none') {
-        newNoteClass.style.display = 'block';
-    } else {
-        newNoteClass.style.display = 'none';
-    }
-});
-const editableFields = document.querySelectorAll('.editableField');
-editableFields.forEach(field => {
-    field.addEventListener('keydown', function (e) {
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const editableField = document.getElementById('note');
+    editableField.addEventListener('keydown', function (e) {
         if (e.key === 'Tab') {
             e.preventDefault();
             const { selectionStart, selectionEnd } = this;
@@ -24,17 +17,31 @@ editableFields.forEach(field => {
             this.selectionStart = this.selectionEnd = selectionStart + 1;
         }
     });
+    
+    const showNewButton = document.getElementById('showNew');
+    showNewButton.addEventListener('click', function () {
+        const newNoteClass = document.getElementById('newNote');
+        if (newNoteClass.style.display === 'none') {
+            newNoteClass.style.display = 'block';
+        } else {
+            newNoteClass.style.display = 'none';
+        }
+    });
 });
 
-const noteContainer = document.getElementById('noteContainer');
+const noteContainer = document.getElementById('notesContainer');
 const saveButton = document.getElementById('saveNoteButton');
-saveButton.addEventListener('click', function () { saveNote(); loadNotes() });
+saveButton.addEventListener('click', function (event) { 
+    event.preventDefault();
+    event.stopPropagation()
+    saveNote();
+    loadNotes();
+     });
 
 const searchButton = document.getElementById('buttonSearch');
 searchButton.addEventListener('click', function () {
     const searchedWord = document.getElementById('searchWord').value;
-    console.log(searchedWord);
-    loadSearch(searchedWord)
+    loadSearch(searchedWord);
 });
 const buttonUndo = document.getElementById('undoButton');
 buttonUndo.addEventListener('click', function () {
@@ -44,6 +51,7 @@ buttonUndo.addEventListener('click', function () {
 window.addEventListener('keydown', function (event) {
     if (event.ctrlKey && event.key === 'z') {
         restoreNotesFromHistory();
+        loadNotes();
     }
 });
 
@@ -57,13 +65,7 @@ function initializeApp() {
     if (storedNotes) {
         Notes = JSON.parse(storedNotes);
     } else {
-        Notes = [{
-            "number": 0,
-            "created": currentDate,
-            "lastModified": currentDate,
-            "title": "Note one",
-            "text": "Welcome to Note App"
-        }];
+        Notes = [];
         localStorage.setItem('notes', JSON.stringify(Notes));
     }
     const storedHistory = localStorage.getItem('history');
@@ -73,7 +75,6 @@ function initializeApp() {
         changesHistory = [];
         localStorage.setItem('history', JSON.stringify(changesHistory));
     }
-    console.log(Notes.length, changesHistory.length);
 
     loadNotes();
 

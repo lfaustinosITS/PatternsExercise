@@ -1,8 +1,7 @@
 import { loadNotes } from "./loadNotes.js";
-export { saveEditedNote, saveNote, editNote, searchNotes, deleteNote, saveHistory, restoreNotesFromHistory };
+export { saveEditedNote, saveNote, editNote, searchNotes, deleteNote, saveHistory, restoreNotesFromHistory, createIndexSearch };
 
-const storedNotes = localStorage.getItem('notes');
-let Notes = JSON.parse(storedNotes);
+
 
 //Save History
 const storedHistory = localStorage.getItem('history');
@@ -11,13 +10,12 @@ let changesHistory = JSON.parse(storedHistory);
 function saveHistory(array) {
     changesHistory.push(array);
     localStorage.setItem('history', JSON.stringify(changesHistory));
-    console.log(changesHistory);
 
 }
 //Restore Notes
 function restoreNotesFromHistory() {
     if (changesHistory.length > 0) {
-        Notes = changesHistory[changesHistory.length - 1];
+        let Notes = changesHistory[changesHistory.length - 1];
         changesHistory.pop();
         localStorage.setItem('notes', JSON.stringify(Notes));
         localStorage.setItem('history', JSON.stringify(changesHistory));
@@ -26,9 +24,9 @@ function restoreNotesFromHistory() {
 
 //SaveNote
 function saveNote() {
-    event.preventDefault();
+    const storedNotes = localStorage.getItem('notes');
+    let Notes = JSON.parse(storedNotes);
     const noteText = document.getElementById('note').value;
-    const formattedText = JSON.stringify(noteText);
     const currentDate = new Date();
     const noteTitle = document.getElementById('title').value;
     if (noteText == '' || noteTitle == '') {
@@ -39,7 +37,7 @@ function saveNote() {
         created: currentDate,
         lastModified: currentDate,
         title: noteTitle,
-        text: formattedText
+        text: noteText
     };
     const notesCopy = JSON.parse(JSON.stringify(Notes));
     saveHistory(notesCopy);
@@ -47,34 +45,62 @@ function saveNote() {
     localStorage.setItem('notes', JSON.stringify(Notes));
     document.getElementById('title').value = "";
     document.getElementById('note').value = "";
-    loadNotes(Notes);
 }
 
 //Delete Note
 function deleteNote(noteId) {
-    const index = Notes.findIndex(note => note.number === noteId);
+    const storedNotes = localStorage.getItem('notes');
+    let Notes = JSON.parse(storedNotes);
+    const index = Notes.findIndex(note => note.number === parseInt(noteId));
     if (index !== -1) {
         saveHistory(Notes);
         Notes.splice(index, 1);
         localStorage.setItem('notes', JSON.stringify(Notes));
-        loadNotes(Notes);
+
     }
+    loadNotes();
 }
 //Edit Note
-function editNote(note) {
-    const noteContainer = document.getElementById('noteContainer');
+function editNote(noteId) {
+    const storedNotes = localStorage.getItem('notes');
+    let Notes = JSON.parse(storedNotes);
+    const noteIndex = Notes.findIndex(item => item.number === parseInt(noteId));
+    const note = Notes[noteIndex];
+    const noteContainer = document.getElementById('notesContainer');
     noteContainer.innerHTML = '';
-    const formattedText = note.text.replace(/"/g, '')
-        .replace(/\\n/g, '\n')
-        .replace(/\\t/g, '&#9;');
     const editForm = document.createElement('form');
-    editForm.innerHTML = `
-        <input type="text" id="editTitle" value="${note.title}"></br></br>
-        <textarea type="text" id="editNote" class="editable-field">${formattedText}</textarea></br></br>
-        <button type="button" id="saveEdit" >Save Changes</button>
-        <button type="button" id="back">Back</button>
-
-    `;
+    const editTitleInput = document.createElement('input');
+    editTitleInput.type = 'text';
+    editTitleInput.id = 'editTitle';
+    editTitleInput.value = note.title;
+    editForm.appendChild(editTitleInput);
+    editForm.appendChild(document.createElement('br'));
+    editForm.appendChild(document.createElement('br'));
+    const editNoteTextarea = document.createElement('textarea');
+    editNoteTextarea.value = note.text;
+    editNoteTextarea.id = 'editNote';
+    editNoteTextarea.classList.add('editable-field');
+    editNoteTextarea.textContent = note.text;
+    editForm.appendChild(editNoteTextarea);
+    editForm.appendChild(document.createElement('br'));
+    editForm.appendChild(document.createElement('br'));
+    const saveEditButton = document.createElement('button');
+    saveEditButton.type = 'button';
+    saveEditButton.id = 'saveEdit';
+    saveEditButton.textContent = 'Save Changes';
+    saveEditButton.addEventListener('click', function () {
+        saveEditedNote(note.number);
+        loadNotes();
+    });
+    editForm.appendChild(saveEditButton);
+    const backButton = document.createElement('button');
+    backButton.type = 'button';
+    backButton.id = 'back';
+    backButton.textContent = 'Back';
+    backButton.addEventListener('click', function () {
+        loadNotes();
+    });
+    editForm.appendChild(backButton);
     noteContainer.appendChild(editForm);
     const editableField = document.getElementById('editNote');
     editableField.addEventListener('keydown', function (e) {
@@ -85,42 +111,44 @@ function editNote(note) {
             this.selectionStart = this.selectionEnd = selectionStart + 1;
         }
     });
-    const backButton = document.getElementById("back");
-    const saveEditButton = document.getElementById("saveEdit");
-    backButton.addEventListener('click', function () { loadNotes(Notes) });
-    saveEditButton.addEventListener('click', function () { saveEditedNote(note.number) })
 
 }
 
 //Save Edited Note
 function saveEditedNote(noteId) {
+    const storedNotes = localStorage.getItem('notes');
+    let Notes = JSON.parse(storedNotes);
+    const noteIndex = Notes.findIndex(item => item.number === parseInt(noteId));
     const editTitle = document.getElementById('editTitle').value;
     const editNote = document.getElementById('editNote').value;
-    const formattedText = JSON.stringify(editNote);
-    const index = Notes.findIndex(note => note.number === noteId);
-    if (index !== -1) {
-        saveHistory(Notes);
-        Notes[index].title = editTitle;
-        Notes[index].text = formattedText;
-        Notes[index].lastModified = new Date();
+    if (noteIndex !== -1) {
+        Notes[noteIndex].title = editTitle;
+        Notes[noteIndex].text = editNote;
+        Notes[noteIndex].lastModified = new Date();
         localStorage.setItem('notes', JSON.stringify(Notes));
-        loadNotes(Notes);
+        loadNotes();
     }
 }
 //Search
 function createIndexSearch() {
-    const indexSearch = [];
+    const storedNotes = localStorage.getItem('notes');
+    const Notes = JSON.parse(storedNotes);
+    const indexSearch = {};
+
     for (let i = 0; i < Notes.length; i++) {
         for (let item of Notes[i].text.match(/\b\w+\b/g)) {
-            if (item in indexSearch) {
-                indexSearch[item].push(i)
-            } else {
-                indexSearch[item] = [i];
+            if (!indexSearch[item]) {
+                indexSearch[item] = [];
+            }
+            if (!indexSearch[item].includes(i)) {
+                indexSearch[item].push(i);
             }
         }
     }
-    return indexSearch
+
+    return indexSearch;
 }
+
 function searchNotes(word) {
     const indexSearchL = createIndexSearch()
     if (word in indexSearchL) {
