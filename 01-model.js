@@ -1,4 +1,4 @@
-export { getNotes,getHistory, saveEditedNoteM, saveNoteM, editNoteM, searchNotes, deleteNoteM, saveHistory, restoreNotesFromHistoryM, createIndexSearch, editNoteM,putNoteInPlaceM };
+export { getNotes,getHistory, saveEditedNoteM, saveNoteM, editNoteM, searchNotes, deleteNoteM, saveHistory, restoreNotesFromHistoryM, createIndexSearch,putNoteInPlaceM };
 
 //Get Notes
 function getNotes(){
@@ -120,17 +120,27 @@ function createIndexSearch() {
     return indexSearch;
 }
 
-function searchNotes(word) {
-    const indexSearchL = createIndexSearch()
-    if (word in indexSearchL) {
-        return indexSearchL[word];
-    } else {
-        return [];
-    }
+// function searchNotes(word) {
+//     const indexSearchL = createIndexSearch()
+//     if (word in indexSearchL) {
+//         return indexSearchL[word];
+//     } else {
+//         return [];
+//     }
 
+// }
+
+function searchNotes(word){
+    const storedNotes = localStorage.getItem('notes');
+    const Notes = JSON.parse(storedNotes);
+    const indexNotes = [];
+    for (let i =0;i<Notes.length;i++){
+        note = Notes[i];
+        if (note.text.includes(word)){
+            indexNotes.push(i);
+        }
+    }return indexNotes
 }
-
-
 
 
 function reorderNotes(notes, originalIndex, newIndex) {

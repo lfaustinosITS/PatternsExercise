@@ -1,6 +1,6 @@
-import { navigateToItem,loadNotes,saveEditedNote,deleteNote,saveNote,editNote,loadSearch,putNoteInPlace, restoreNotesFromHistory } from "./02-presenter.js";
+import { navigateToItem, loadNotes, saveEditedNote, deleteNote, saveNote, editNote, loadSearch, putNoteInPlace, restoreNotesFromHistory } from "./02-presenter.js";
 
-export { readFields,listOfNotes, singleNote,displayNotes,displayResults,editNoteTemplate,startEvents,readNewFields };
+export { readFields, listOfNotes, singleNote, displayNotes, displayResults, editNoteTemplate, startEvents, readNewFields };
 
 const formatDate = function (dateString) {
     const date = new Date(dateString);
@@ -36,9 +36,30 @@ function displayNotes(Notes) {
 
 //Display search results
 
-function displayResults(results, Notes) {
-    const noteContainer = document.getElementById('notesContainer')
+function displayResults(results, Notes, word) {
+    const messageDiv = document.getElementById('messages');
+    const closeButton = document.getElementById('close');
+    closeButton.classList.remove('hide');
+    closeButton.addEventListener('click', () => {
+        messageDiv.textContent = ''
+        closeButton.classList.add('hide');
+    });
+    if (word.length===0){
+        messageDiv.textContent = `Enter a word to search for`;
+        loadNotes();
+        return;
+    }
+
+    if (results.length === 0) {
+        messageDiv.textContent = `No search results found for ${word}`;
+        loadNotes();
+        return;
+    }
+
+
+    const noteContainer = document.getElementById('notesContainer');
     noteContainer.innerHTML = '';
+    messageDiv.textContent = `Search results for ${word}`;
     for (const key in results) {
         const note = Notes[results[key]];
         const template1 = listOfNotes(note);
@@ -47,6 +68,8 @@ function displayResults(results, Notes) {
         backButton.addEventListener('click', event => {
             event.preventDefault();
             event.stopPropagation();
+            messageDiv.textContent = ''
+            closeButton.classList.add('hide');
             loadNotes();
         });
 
@@ -63,8 +86,8 @@ function listOfNotes(note) {
     const clon = noteTemplate.content.cloneNode(true);
     clon.querySelector('.noteDisplayed').id = note.number
     clon.querySelector('article').draggable = true;
-    clon.querySelector('article').setAttribute('data-id',note.number);
-    clon.querySelector('article').addEventListener('dragstart', function (event){
+    clon.querySelector('article').setAttribute('data-id', note.number);
+    clon.querySelector('article').addEventListener('dragstart', function (event) {
         event.dataTransfer.setData('text/plain', note.number.toString());
     })
     clon.querySelector('#title').textContent = note.title;
@@ -91,38 +114,38 @@ function listOfNotes(note) {
 function singleNote(noteId) {
     const viewNote = document.getElementById(noteId);
     const noteArticle = viewNote.querySelector("article");
-    noteArticle.draggable=false;
+    noteArticle.draggable = false;
     noteArticle.classList.remove("listTemplate");
     noteArticle.classList.add("template2")
     viewNote.querySelector("#seeNote")
         .classList.add('hide');
     const backButton = viewNote.querySelector("#backButton");
-        backButton.classList.remove('hide')
-        backButton.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation();
-            loadNotes();
-        });
+    backButton.classList.remove('hide')
+    backButton.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        loadNotes();
+    });
     const deleteButton = viewNote.querySelector("#deleteButton");
-        deleteButton.classList.remove('hide')
-        deleteButton.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation()
-            deleteNote(noteId);
-            loadNotes();
-        })
+    deleteButton.classList.remove('hide')
+    deleteButton.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation()
+        deleteNote(noteId);
+        loadNotes();
+    })
     const editButton = viewNote.querySelector('#editButton')
-        editButton.classList.remove('hide')
-        editButton.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation();
-            editNote(noteId);
-        })
-    
+    editButton.classList.remove('hide')
+    editButton.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        editNote(noteId);
+    })
+
 }
 //Edit Note Template
 
-function editNoteTemplate(note){
+function editNoteTemplate(note) {
     const noteContainer = document.getElementById('notesContainer');
     noteContainer.innerHTML = '';
     const editForm = document.createElement('form');
@@ -171,30 +194,30 @@ function editNoteTemplate(note){
 }
 
 //Read field content
-function readFields(){
-    const titleTemplate =document.getElementById('editTitle');
+function readFields() {
+    const titleTemplate = document.getElementById('editTitle');
     const textTemplate = document.getElementById('editNote');
     const editTitle = titleTemplate.value;
     const editNote = textTemplate.value;
-    titleTemplate.value='';
-    textTemplate.value='';    
-    return {title:editTitle, text:editNote}
+    titleTemplate.value = '';
+    textTemplate.value = '';
+    return { title: editTitle, text: editNote }
 }
 
-function readNewFields(){
-    const titleTemplate =document.getElementById('title');
+function readNewFields() {
+    const titleTemplate = document.getElementById('title');
     const textTemplate = document.getElementById('note');
     const editTitle = titleTemplate.value;
     const editNote = textTemplate.value;
-    titleTemplate.value='';
-    textTemplate.value='';
-    return {title:editTitle, text:editNote}
+    titleTemplate.value = '';
+    textTemplate.value = '';
+    return { title: editTitle, text: editNote }
 }
-function clearFields(){
+function clearFields() {
     const editTitle = document.getElementById('title').value;
     const editNote = document.getElementById('note').value;
-    editTitle.textContent='';
-    editNote.textContent='';
+    editTitle.textContent = '';
+    editNote.textContent = '';
 }
 
 
@@ -248,9 +271,10 @@ function startEvents() {
                 loadNotes();
             }
         });
-    
-    noteContainer.addEventListener('dragover', handleDragOver);
-    noteContainer.addEventListener('drop', handleDrop);});
+
+        noteContainer.addEventListener('dragover', handleDragOver);
+        noteContainer.addEventListener('drop', handleDrop);
+    });
 }
 
 
@@ -267,7 +291,7 @@ function handleDrop(event) {
     event.preventDefault();
     const noteId = parseInt(event.dataTransfer.getData('text/plain'));
     const newIndex = parseInt(event.target.getAttribute('data-id'));
-    putNoteInPlace(noteId,newIndex);
+    putNoteInPlace(noteId, newIndex);
 
 }
 

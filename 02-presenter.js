@@ -40,16 +40,13 @@ function putNoteInPlace(noteId,newIndex){
 
 
 function loadSearch(word) {
+
     let Notes = getNotes();
     const searchIndex = searchNotes(word) || [];
-    if (searchIndex.length === 0) {
-       
-        loadNotes();
-
-    } else {
-        displayResults(searchIndex,Notes)
+    
+        displayResults(searchIndex,Notes,word)
         
-    }
+    
 }
 //Navigation to single note
 function navigateToItem(noteId) {
